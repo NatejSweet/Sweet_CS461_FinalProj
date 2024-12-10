@@ -5,6 +5,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from time import time
 import traceback
 import uvicorn
+from fastapi.responses import JSONResponse
 
 from OSUCS461.Utilities.CustomLogger import custom_logger
 from OSUCS461.Config import FASTAPI_CONFIG
@@ -28,10 +29,12 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 				break
 		logger.info(f"Handling function: {route_name}")
 		start_time = time()
+		response = None
 		try:
 			response = await call_next(request)
 		except Exception as e:
 			logger.error(f"Error processing request. Request was handled by: {route_name} \nMethod: {request.method} - URL: {request.url} - Headers: {request.headers} \nStack Trace: {e}\n{traceback.format_exc()}")
+			response = JSONResponse(status_code=500, content={"error": "Internal Server Error"})
 		process_time = time() - start_time
 		logger.info(f"Completed request in {process_time:.4f} seconds")
 		logger.info(f"Response status code: {response.status_code}")
