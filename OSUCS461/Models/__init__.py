@@ -15,6 +15,9 @@ class WriteUser(BasePydanticModel):
 
 class ReadUser(WriteUser):
     uuid: str
+    
+class UpdateUser(BasePydanticModel):
+    name: str
 
 # UserPost Models
 class WriteUserPost(BasePydanticModel):

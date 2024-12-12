@@ -79,6 +79,7 @@ class mysql_core:
 				con.commit()
 
 				if query.find("insert") == 0 or query.find("replace") == 0:
+					print("query", query)
 					result = {
 						"insert_id": cursor.lastrowid,  # only for auto_increment
 						"affected_rows": count,

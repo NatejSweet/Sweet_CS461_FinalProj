@@ -4,70 +4,147 @@ BASE_URL="http://127.0.0.1:8855/v1"
 
 # Create a new user
 echo "Creating a new user..."
-curl -X POST "$BASE_URL/users" -H "Content-Type: application/json" -d '{
+res=$(curl -s -X POST "$BASE_URL/users" -H "Content-Type: application/json" -d '{
   "name": "newuser",
-  "time_created": 1633024800
-# }'
-# echo -e "\n"
-# # Get all users
-# echo "Getting all users..."
-# curl -X GET "$BASE_URL/users"
-# echo -e "\n"
+  "time_created" : 2
+}')
+expected_response='{"uuid":"2e42fb99dfb563d785e3888fd2ceb14c","name":"newuser","time_created":2}'
+if [ "$res" = "$expected_response" ]; then
+  echo "Test Passed"
+else
+  echo "Test Failed"
+fi
+echo $res
+echo "\n"
+
+uuid=$(echo $res | jq -r '.uuid')
 
 # # Get a specific user by ID
-# USER_ID=1
-# echo "Getting user with ID $USER_ID..."
-# curl -X GET "$BASE_URL/users/$USER_ID"
-# echo -e "\n"
+echo "Getting user with ID $uuid..."
+res=$(curl -s -X GET "$BASE_URL/users/$uuid")
+expected_response='{"uuid":"2e42fb99dfb563d785e3888fd2ceb14c","name":"newuser","time_created":2}'
+if [ "$res" = "$expected_response" ]; then
+  echo "Test Passed"
+else
+  echo "Test Failed"
+fi
+echo $res
+echo "\n"
 
+# # Get all users
+echo "Getting all users..."
+res=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/users")
+if [ "$res" -eq 200 ]; then
+    echo "Test Passed"
+else
+    echo "Test Failed"
+fi
 
+# Ensure the response has content
+res=$(curl -s -X GET "$BASE_URL/users")
+if [ -n "$res" ]; then
+    echo "Response has content"
+else
+    echo "Response is empty"
+fi
+echo $res
+echo "\n"
 
 # # Update a user by ID
-# echo "Updating user with ID $USER_ID..."
-# curl -X PUT "$BASE_URL/users/$USER_ID" -H "Content-Type: application/json" -d '{
-#   "username": "updateduser"
-# }'
-# echo -e "\n"
+echo "Updating user with ID $uuid..."
+res=$(curl -s -X PUT "$BASE_URL/users/$uuid" -H "Content-Type: application/json" -d '{
+  "name": "updateduser"
+}')
+expected_response='{"uuid":"2e42fb99dfb563d785e3888fd2ceb14c","name":"updateduser","time_created":2}'
+if [ "$res" = "$expected_response" ]; then
+  echo "Test Passed"
+else
+  echo "Test Failed"
+fi
+echo $res
+echo "\n"
+# Delete a user by ID
+echo "Deleting user with ID $uuid..."
+res=$(curl -s -X DELETE "$BASE_URL/users/$uuid")
+expected_response='{"message":"User deleted"}'
+echo $res
+if [ "$res" = "$expected_response" ]; then
+  echo "Test Passed"
+else
+  echo "Test Failed"
+fi
+echo $res
+echo "\n"
 
-# # Delete a user by ID
-# echo "Deleting user with ID $USER_ID..."
-# curl -X DELETE "$BASE_URL/users/$USER_ID"
-# echo -e "\n"
+# Create a new post
+echo "Creating a new post..."
+res=$(curl -s -X POST "$BASE_URL/posts" -H "Content-Type: application/json" -d '{
+  "user_uuid": "2e42fb99dfb563d785e3888fd2ceb14c",
+  "post_9char": "post12345",
+  "text": "This is a new post",
+  "time_created": 1633024800
+}')
+expected_response='{"user_uuid":"2e42fb99dfb563d785e3888fd2ceb14c","post_9char":"post12345","text":"This is a new post","time_created":1633024800,"uuid":"08193eea5eaf516c30cf72b1bf6aad37"}'
 
-# # Get all posts
-# echo "Getting all posts..."
-# curl -X GET "$BASE_URL/posts"
-# echo -e "\n"
+if [ "$res" = "$expected_response" ]; then
+  echo "Test Passed"
+else
+  echo "Test Failed"
+fi
+echo $res
+echo "\n"
+post_uuid=$(echo $res | jq -r '.uuid')
+
 
 # # Get a specific post by ID
-# POST_ID=1
-# echo "Getting post with ID $POST_ID..."
-# curl -X GET "$BASE_URL/posts/$POST_ID"
-# echo -e "\n"
-
-# # Create a new post
-# echo "Creating a new post..."
-# curl -X POST "$BASE_URL/posts" -H "Content-Type: application/json" -d '{
-#   "user_uuid": "user-uuid",
-#   "post_9char": "post12345",
-#   "text": "This is a new post",
-#   "time_created": 1633024800
-# }'
-# echo -e "\n"
+echo "Getting post with ID $post_uuid..."
+res=$(curl -s -X GET "$BASE_URL/posts/$post_uuid")
+expected_response='{"uuid":"08193eea5eaf516c30cf72b1bf6aad37","user_uuid":"2e42fb99dfb563d785e3888fd2ceb14c","post_9char":"post12345","text":"This is a new post","time_created":1633024800}'
+if [ "$res" = "$expected_response" ]; then
+  echo "Test Passed"
+else
+  echo "Test Failed"
+fi
+echo $res
+echo "\n"
 
 # # Update a post by ID
-# echo "Updating post with ID $POST_ID..."
-# curl -X PUT "$BASE_URL/posts/$POST_ID" -H "Content-Type: application/json" -d '{
-#   "text": "Updated post text"
-# }'
-# echo -e "\n"
+echo "Updating post with ID $post_uuid..."
+res=$(curl -s -X PUT "$BASE_URL/posts/$post_uuid" -H "Content-Type: application/json" -d '{
+  "user_uuid": "2e42fb99dfb563d785e3888fd2ceb14c",
+  "post_9char": "post12345",
+  "text": "This is an updated post",
+  "time_created": 1633024800
+}')
+expected_response='{"uuid":"08193eea5eaf516c30cf72b1bf6aad37","user_uuid":"2e42fb99dfb563d785e3888fd2ceb14c","post_9char":"post12345","text":"This is an updated post","time_created":1633024800}'
+if [ "$res" = "$expected_response" ]; then
+  echo "Test Passed"
+else
+  echo "Test Failed"
+fi
+echo $res
+echo "\n"
 
-# # Delete a post by ID
-# echo "Deleting post with ID $POST_ID..."
-# curl -X DELETE "$BASE_URL/posts/$POST_ID"
-# echo -e "\n"
+# Get all posts for a specific user
+echo "Getting all posts for user with ID $uuid..."
+res=$(curl GET -s "$BASE_URL/users/$uuid/posts")
+expected_response='[{"uuid":"08193eea5eaf516c30cf72b1bf6aad37","user_uuid":"2e42fb99dfb563d785e3888fd2ceb14c","post_9char":"post12345","text":"This is an updated post","time_created":1633024800}]'
+if [ "$res" = "$expected_response" ]; then
+  echo "Test Passed"
+else
+  echo "Test Failed"
+fi
+echo $res
+echo "\n"
 
-# # Get all posts for a specific user
-# echo "Getting all posts for user with ID $USER_ID..."
-# curl -X GET "$BASE_URL/users/$USER_ID/posts"
-# echo -e "\n"
+# Delete a post by ID
+echo "Deleting post with ID $POST_ID..."
+res=$(curl -s -X DELETE "$BASE_URL/posts/$post_uuid")
+expected_response='{"message":"Post deleted"}'
+if [ "$res" = "$expected_response" ]; then
+  echo "Test Passed"
+else
+  echo "Test Failed"
+fi
+echo $res
+echo "\n"

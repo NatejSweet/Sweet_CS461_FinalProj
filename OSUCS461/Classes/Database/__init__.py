@@ -6,18 +6,16 @@ DB = MySQL(**DatabaseConfig)
 
 class UserLogic:
     def generate_uuid(name: str, time_created: int):
-        return hashlib.md5((name+str(time_created)).encode()).hexdigest()
+        return hashlib.md5((name + str(time_created)).encode()).hexdigest()
+
     @staticmethod
     def write(name: str = None, time_created: int = None):
-        user = WriteUser(name = name, time_created = time_created)
-        uuid = UserLogic.generate_uuid(user.name, user.time_created)
-        query = f"insert INTO user (name, time_created, uuid) VALUES ('{user.name}', {user.time_created}, '{uuid}')"
+        uuid = UserLogic.generate_uuid(name, time_created)
+        query = f"INSERT INTO user (name, time_created, uuid) VALUES ('{name}', {time_created}, '{uuid}')"
         res = DB.query(query)
-        if res:
-            query = f"SELECT * FROM user WHERE uuid = '{uuid}'"
-            user = DB.get_row(query)
-            return ReadUser(uuid=user.get('uuid'), name=user.get('name'), time_created=user.get('time_created'))
-        else:
+        if res: 
+            return uuid
+        else: 
             return None
     @staticmethod
     def read(uuid: str = None):
@@ -42,8 +40,8 @@ class UserLogic:
         if name:
             query = f"UPDATE user SET name = '{name}' WHERE uuid = '{uuid}'"
             DB.run(query)
-            user_updated = UserLogic.read_one(uuid)
-            if user_updated and user_updated.name == name:
+            user_updated = UserLogic.read(uuid)
+            if user_updated and user_updated.get('name') == name:
                 return user_updated
             else:
                 return None

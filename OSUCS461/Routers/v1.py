@@ -1,5 +1,5 @@
 from fastapi import APIRouter, FastAPI
-from Models import WriteUser, ReadUser, WriteUserPost, ReadUserPost
+from Models import WriteUser, ReadUser, WriteUserPost, ReadUserPost, UpdateUser
 from Classes.Database import UserLogic, UserPostLogic
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
@@ -30,16 +30,16 @@ async def read_user(user_id: str):
 
 @router.post("/users")
 async def write_user(user : WriteUser):
-    # try:
+    try:
         uuid = UserLogic.write(user.name, user.time_created)
-        print(uuid)
         user = UserLogic.read(uuid)
         return user
-    # except Exception as e:
-        # raise HTTPException(status_code=500, detail=e)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e)
     
 @router.put("/users/{user_id}")
-async def update_user(user_id: str, name: str):
+async def update_user(user_id: str, user: UpdateUser):
+    name = user.name
     user = UserLogic.update(user_id, name)
     if user:
         return user
@@ -54,7 +54,7 @@ async def delete_user(user_id: str):
     else:
         raise HTTPException(status_code=404, detail="User not found")
     
-@router.get("posts")
+@router.get("/posts")
 async def read_posts():
     res = UserPostLogic.read()
     if res:
@@ -62,7 +62,7 @@ async def read_posts():
     else:
         raise HTTPException(status_code=404, detail="Posts not found")
 
-@router.get("posts/{post_id}")
+@router.get("/posts/{post_id}")
 async def read_post(post_id: str):
     res = UserPostLogic.read(post_id)
     if res:
@@ -70,7 +70,7 @@ async def read_post(post_id: str):
     else:
         raise HTTPException(status_code=404, detail="Post not found")
 
-@router.post("posts")
+@router.post("/posts")
 async def write_post(post : WriteUserPost):
     res = UserPostLogic.write(post.user_uuid, post.post_9char, post.text, post.time_created)
     if res:
@@ -78,15 +78,16 @@ async def write_post(post : WriteUserPost):
     else:
         raise HTTPException(status_code=404, detail="Failed to write post")
     
-@router.put("posts/{post_id}")
-async def update_post(post_id: str, text: str):
+@router.put("/posts/{post_id}")
+async def update_post(post_id: str, post: WriteUserPost):
+    text = post.text
     res = UserPostLogic.update(post_id, text)
     if res:
         return res
     else:
         raise HTTPException(status_code=404, detail="Failed to update post")
 
-@router.delete("posts/{post_id}")
+@router.delete("/posts/{post_id}")
 async def delete_post(post_id: str):
     res = UserPostLogic.delete(post_id)
     if res:
@@ -94,7 +95,7 @@ async def delete_post(post_id: str):
     else:
         raise HTTPException(status_code=404, detail="Post not found")
 
-@router.get("users/{user_id}/posts")
+@router.get("/users/{user_id}/posts")
 async def read_user_posts(user_id: str):
     res = UserPostLogic.readUserPosts(user_id)
     if res:
